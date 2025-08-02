@@ -67,6 +67,12 @@ export default function Onboarding() {
 
   const simulateProgress = () => {
     let currentStep = 0;
+    const steps = [
+      "Reading the Finanshels website",
+      "Creating a knowledge base with the content", 
+      "Configuring the Finanshels ainager",
+      "Done"
+    ];
     
     const updateStep = () => {
       if (currentStep > 0) {
@@ -79,7 +85,7 @@ export default function Onboarding() {
         );
       }
 
-      if (currentStep < progressSteps.length) {
+      if (currentStep < steps.length) {
         setProgressSteps(prev => 
           prev.map((step, index) => 
             index === currentStep 
@@ -88,17 +94,27 @@ export default function Onboarding() {
           )
         );
         
-        setCurrentProgressText(progressSteps[currentStep].text + "...");
-        setProgressPercentage(((currentStep + 1) / progressSteps.length) * 100);
+        setCurrentProgressText(steps[currentStep] + "...");
+        setProgressPercentage(((currentStep + 1) / steps.length) * 100);
 
         currentStep++;
         
-        if (currentStep <= progressSteps.length) {
+        if (currentStep < steps.length) {
           setTimeout(updateStep, 2000);
         } else {
+          // Complete the last step
           setTimeout(() => {
-            setCurrentScreen("success");
-          }, 1000);
+            setProgressSteps(prev => 
+              prev.map((step, index) => 
+                index === steps.length - 1 
+                  ? { ...step, completed: true, active: false }
+                  : step
+              )
+            );
+            setTimeout(() => {
+              setCurrentScreen("success");
+            }, 500);
+          }, 2000);
         }
       }
     };
