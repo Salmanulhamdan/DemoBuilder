@@ -22,9 +22,9 @@ export default function Onboarding() {
   const [otp, setOtp] = useState("");
   const [emailError, setEmailError] = useState("");
   const [progressSteps, setProgressSteps] = useState<ProgressStep[]>([
-    { id: "step1", text: "Reading the financials website", completed: false, active: false },
+    { id: "step1", text: "Reading the Finanshels website", completed: false, active: false },
     { id: "step2", text: "Creating a knowledge base with the content", completed: false, active: false },
-    { id: "step3", text: "Configuring the finanshels ainager", completed: false, active: false },
+    { id: "step3", text: "Configuring the Finanshels ainager", completed: false, active: false },
     { id: "step4", text: "Done", completed: false, active: false }
   ]);
   const [progressPercentage, setProgressPercentage] = useState(0);
@@ -124,6 +124,9 @@ export default function Onboarding() {
   };
 
   const handleComplete = () => {
+    // Open the link in a new tab
+    window.open("https://www.ainager.com/w/finanshels", "_blank");
+    
     toast({
       title: "Setup Complete!",
       description: "Your AI manager is ready to use",
