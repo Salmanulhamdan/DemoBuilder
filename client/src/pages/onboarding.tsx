@@ -21,10 +21,13 @@ export default function Onboarding() {
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
   const [emailError, setEmailError] = useState("");
+  const [websiteInfo, setWebsiteInfo] = useState<{ domain: string; title: string; description: string } | null>(null);
+  const [otpSent, setOtpSent] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [progressSteps, setProgressSteps] = useState<ProgressStep[]>([
-    { id: "step1", text: "Reading the Finanshels website", completed: false, active: false },
-    { id: "step2", text: "Creating a knowledge base with the content", completed: false, active: false },
-    { id: "step3", text: "Configuring the Finanshels ainager", completed: false, active: false },
+    { id: "step1", text: "Analyzing company website", completed: false, active: false },
+    { id: "step2", text: "Creating knowledge base", completed: false, active: false },
+    { id: "step3", text: "Configuring your ainager", completed: false, active: false },
     { id: "step4", text: "Done", completed: false, active: false }
   ]);
   const [progressPercentage, setProgressPercentage] = useState(0);
@@ -36,16 +39,53 @@ export default function Onboarding() {
     return emailRegex.test(email);
   };
 
-  const handleEmailSubmit = () => {
+  const handleEmailSubmit = async () => {
     if (!validateEmail(email)) {
       setEmailError("Please enter a valid email address");
       return;
     }
-    setEmailError("");
-    setCurrentScreen("otp");
+
+    // Prevent common public email providers
+    const publicDomains = new Set([
+      "gmail.com","yahoo.com","yahoo.co.in","outlook.com","hotmail.com","live.com","msn.com","icloud.com","me.com","mac.com","aol.com","proton.me","protonmail.com","gmx.com","mail.com","zoho.com","yandex.com","hey.com","duck.com"
+    ]);
+    const domain = email.split("@")[1]?.toLowerCase();
+    if (!domain || publicDomains.has(domain)) {
+      setEmailError("Please use your company email address");
+      return;
+    }
+    
+    if (otpSent) {
+      setEmailError("OTP already sent. Please check your email or wait before requesting another.");
+      return;
+    }
+    
+    try {
+      setEmailError("");
+      setIsLoading(true);
+      
+      // Request OTP from server
+      const response = await fetch("/api/auth/request-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+        credentials: "include",
+      });
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to request verification code");
+      }
+      setOtpSent(true);
+      
+      setCurrentScreen("otp");
+    } catch (e: any) {
+      setEmailError(e?.message || "Failed to request verification code");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleOTPVerify = () => {
+  const handleOTPVerify = async () => {
     if (otp.length !== 6) {
       toast({
         title: "Invalid Code",
@@ -54,27 +94,63 @@ export default function Onboarding() {
       });
       return;
     }
-    setCurrentScreen("progress");
-    simulateProgress();
+    
+    try {
+      setIsLoading(true);
+      
+      // Verify OTP server-side then analyze website
+      const res = await fetch("/api/auth/verify-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, code: otp }),
+        credentials: "include",
+      });
+      
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || "Verification failed");
+      }
+      
+      const data = await res.json();
+      if (data.websiteInfo) {
+        setWebsiteInfo(data.websiteInfo);
+      }
+      
+      setCurrentScreen("progress");
+      simulateProgress();
+    } catch (e: any) {
+      toast({ title: "Verification failed", description: e?.message || "Failed to analyze website", variant: "destructive" });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleResendOTP = () => {
+    if (otpSent) {
+      toast({
+        title: "OTP Already Sent",
+        description: "Please check your email for the verification code",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     toast({
-      title: "Code Sent",
-      description: "A new verification code has been sent to your email",
+      title: "Resend Available",
+      description: "You can request a new code if the previous one expires",
     });
   };
 
-  const simulateProgress = () => {
+  const simulateProgress = async () => {
     let currentStep = 0;
     const steps = [
-      "Reading the Finanshels website",
-      "Creating a knowledge base with the content", 
-      "Configuring the Finanshels ainager",
+      "Analyzing company website",
+      "Creating knowledge base", 
+      "Configuring your ainager",
       "Done"
     ];
     
-    const updateStep = () => {
+    const updateStep = async () => {
       if (currentStep > 0) {
         setProgressSteps(prev => 
           prev.map((step, index) => 
@@ -100,9 +176,22 @@ export default function Onboarding() {
         currentStep++;
         
         if (currentStep < steps.length) {
-          setTimeout(updateStep, 2000);
+          setTimeout(() => updateStep(), 1200);
         } else {
-          // Complete the last step
+          try {
+            // Call backend to create ainager using email
+            const res = await fetch("/api/ainager/create", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ email }),
+              credentials: "include",
+            });
+            if (!res.ok) throw new Error(await res.text());
+            const data: { shareableLink: string } = await res.json();
+            setGeneratedLink(data.shareableLink);
+          } catch (err: any) {
+            toast({ title: "Setup error", description: err?.message || "Failed to create ainager", variant: "destructive" });
+          }
           setTimeout(() => {
             setProgressSteps(prev => 
               prev.map((step, index) => 
@@ -113,8 +202,8 @@ export default function Onboarding() {
             );
             setTimeout(() => {
               setCurrentScreen("success");
-            }, 500);
-          }, 2000);
+            }, 400);
+          }, 800);
         }
       }
     };
@@ -122,8 +211,10 @@ export default function Onboarding() {
     updateStep();
   };
 
+  const [generatedLink, setGeneratedLink] = useState<string>("https://www.ainager.com/w/company");
+
   const handleCopyLink = async () => {
-    const link = "https://www.ainager.com/w/finanshels";
+    const link = generatedLink;
     try {
       await navigator.clipboard.writeText(link);
       toast({
@@ -141,7 +232,7 @@ export default function Onboarding() {
 
   const handleComplete = () => {
     // Open the link in a new tab
-    window.open("https://www.ainager.com/w/finanshels", "_blank");
+    window.open(generatedLink, "_blank");
     
     toast({
       title: "Setup Complete!",
@@ -204,12 +295,13 @@ export default function Onboarding() {
                         </motion.div>
                       )}
                     </div>
-                    
+
                     <Button 
                       onClick={handleEmailSubmit}
-                      className="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98]"
+                      disabled={isLoading || otpSent}
+                      className="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      OK
+                      {isLoading ? "Sending..." : otpSent ? "OTP Sent" : "OK"}
                     </Button>
                   </div>
                 </CardContent>
@@ -258,9 +350,10 @@ export default function Onboarding() {
                     
                     <Button 
                       onClick={handleOTPVerify}
-                      className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98]"
+                      disabled={isLoading}
+                      className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      Verify
+                      {isLoading ? "Verifying..." : "Verify"}
                     </Button>
 
                     <Button 
@@ -293,6 +386,16 @@ export default function Onboarding() {
                     </div>
                     <h2 className="text-2xl font-bold text-slate-800 mb-2">Setting up your AI Manager</h2>
                     <p className="text-slate-600">This will only take a moment...</p>
+                    {websiteInfo && (
+                      <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                        <p className="text-sm text-blue-800">
+                          <strong>Website Found:</strong> {websiteInfo.title}
+                        </p>
+                        <p className="text-xs text-blue-600 mt-1">
+                          {websiteInfo.description}
+                        </p>
+                      </div>
+                    )}
                   </div>
 
                   <div className="space-y-4 mb-8">
@@ -370,10 +473,12 @@ export default function Onboarding() {
                       <div className="flex items-center space-x-2">
                         <Input
                           type="text"
-                          value="https://www.ainager.com/w/finanshels"
+                          value={generatedLink}
                           readOnly
                           className="flex-1 px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm font-mono"
                         />
+                        
+                        
                         <Button 
                           onClick={handleCopyLink}
                           size="sm"

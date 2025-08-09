@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ainager Demo Setup</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+    tailwind.config = {
+        theme: {
+            extend: {
+                fontFamily: {
+                    'inter': ['Inter', 'sans-serif'],
+                },
+                colors: {
+                    'brand-blue': '#1e3a8a',
+                    'brand-light': '#3b82f6',
+                },
+                animation: {
+                    'fade-in': 'fadeIn 0.5s ease-in-out',
+                    'slide-up': 'slideUp 0.4s ease-out',
+                    'pulse-slow': 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                }
+            }
+        }
+    };
+    </script>
+    <style>
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes slideUp {
+            from { 
+                opacity: 0; 
+                transform: translateY(20px); 
+            }
+            to { 
+                opacity: 1; 
+                transform: translateY(0); 
+            }
+        }
+        .step-transition {
+            transition: all 0.3s ease-in-out;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 font-inter min-h-screen">
+    <!-- @COMPONENT: AppContainer -->
+    <div class="min-h-screen flex items-center justify-center p-4">
+        <div class="w-full max-w-md">
+            
+            <!-- Step 1: Email Entry Screen -->
+            <!-- @COMPONENT: EmailEntryStep [show when currentStep === 1] -->
+            <div id="step1" class="step-screen animate-fade-in">
+                <div class="bg-white rounded-2xl shadow-xl p-8 border border-slate-200">
+                    <!-- Logo Container -->
+                    <div class="flex justify-center mb-8">
+                        <!-- Using the provided logo image -->
+                        <div class="w-16 h-16 bg-brand-blue rounded-xl flex items-center justify-center">
+                            <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTIwIDVDMTEuNzE1NyA1IDUgMTEuNzE1NyA1IDIwQzUgMjguMjg0MyAxMS43MTU3IDM1IDIwIDM1QzI4LjI4NDMgMzUgMzUgMjguMjg0MyAzNSAyMEMzNSAxMS43MTU3IDI4LjI4NDMgNSAyMCA1WiIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSIyIiBmaWxsPSJub25lIi8+CjxjaXJjbGUgY3g9IjE2IiBjeT0iMTYiIHI9IjIiIGZpbGw9IndoaXRlIi8+CjxjaXJjbGUgY3g9IjI0IiBjeT0iMTYiIHI9IjIiIGZpbGw9IndoaXRlIi8+CjxjaXJjbGUgY3g9IjIwIiBjeT0iMjQiIHI9IjIiIGZpbGw9IndoaXRlIi8+CjxwYXRoIGQ9Ik0xMCAzMEwyMCAyMEwzMCAzMEgxMFoiIGZpbGw9IndoaXRlIi8+Cjwvc3ZnPgo=" alt="Ainager Logo" class="w-10 h-10" data-mock="true" />
+                        </div>
+                    </div>
+
+                    <!-- Title -->
+                    <div class="text-center mb-8">
+                        <h1 class="text-3xl font-bold text-slate-800 mb-2">ainager</h1>
+                        <p class="text-slate-600">AI-powered financial management</p>
+                    </div>
+
+                    <!-- Email Form -->
+                    <form id="emailForm" class="space-y-6">
+                        <div>
+                            <label for="email" class="block text-sm font-medium text-slate-700 mb-2">
+                                Enter your Official Email
+                            </label>
+                            <input 
+                                type="email" 
+                                id="email" 
+                                name="email"
+                                data-bind="formData.email"
+                                class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-light focus:border-transparent transition-colors"
+                                placeholder="your-email@company.com"
+                                data-mock="true"
+                                required
+                            />
+                            <!-- @STATE: emailError:string = '' -->
+                            <div id="emailError" class="text-red-500 text-sm mt-1 hidden" data-bind="formData.emailError"></div>
+                        </div>
+
+                        <button 
+                            type="submit" 
+                            class="w-full bg-brand-blue hover:bg-blue-900 text-white font-semibold py-3 px-4 rounded-lg transition-colors focus:ring-2 focus:ring-offset-2 focus:ring-brand-light"
+                            data-event="click:handleEmailSubmit"
+                        >
+                            OK
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Step 2: OTP Verification Screen -->
+            <!-- @COMPONENT: OTPVerificationStep [show when currentStep === 2] -->
+            <div id="step2" class="step-screen hidden">
+                <div class="bg-white rounded-2xl shadow-xl p-8 border border-slate-200 animate-slide-up">
+                    <div class="text-center mb-8">
+                        <div class="w-16 h-16 bg-brand-light rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                            </svg>
+                        </div>
+                        <h2 class="text-2xl font-bold text-slate-800 mb-2">Verify Your Email</h2>
+                        <p class="text-slate-600">We've sent a verification code to your email</p>
+                        <p class="text-sm text-slate-500 mt-1" data-bind="formData.email">your-email@company.com</p>
+                    </div>
+
+                    <form id="otpForm" class="space-y-6">
+                        <div>
+                            <label for="otp" class="block text-sm font-medium text-slate-700 mb-2">
+                                Enter Verification Code
+                            </label>
+                            <input 
+                                type="text" 
+                                id="otp" 
+                                name="otp"
+                                data-bind="formData.otp"
+                                class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-light focus:border-transparent transition-colors text-center text-2xl tracking-widest"
+                                placeholder="000000"
+                                maxlength="6"
+                                data-mock="true"
+                                required
+                            />
+                        </div>
+
+                        <button 
+                            type="submit" 
+                            class="w-full bg-brand-blue hover:bg-blue-900 text-white font-semibold py-3 px-4 rounded-lg transition-colors focus:ring-2 focus:ring-offset-2 focus:ring-brand-light"
+                            data-event="click:handleOTPSubmit"
+                        >
+                            Verify
+                        </button>
+
+                        <button 
+                            type="button" 
+                            class="w-full text-brand-light hover:text-blue-700 font-medium py-2 transition-colors"
+                            data-event="click:resendOTP"
+                        >
+                            Resend Code
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Step 3: Progress Screen -->
+            <!-- @COMPONENT: ProgressStep [show when currentStep === 3] -->
+            <div id="step3" class="step-screen hidden">
+                <div class="bg-white rounded-2xl shadow-xl p-8 border border-slate-200 animate-slide-up">
+                    <div class="text-center mb-8">
+                        <div class="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <div class="w-8 h-8 bg-emerald-500 rounded-full animate-pulse-slow"></div>
+                        </div>
+                        <h2 class="text-2xl font-bold text-slate-800 mb-2">Setting up your AI manager</h2>
+                        <p class="text-slate-600">Please wait while we configure everything</p>
+                    </div>
+
+                    <!-- Progress Steps -->
+                    <!-- @MAP: progressSteps.map((step, index) => ( -->
+                    <div class="space-y-4 mb-8">
+                        <div id="progress-step-1" class="progress-item flex items-center p-4 rounded-lg bg-slate-50 border-l-4 border-transparent">
+                            <div class="flex-shrink-0 w-6 h-6 rounded-full bg-slate-300 mr-4 flex items-center justify-center">
+                                <div class="w-2 h-2 rounded-full bg-white"></div>
+                            </div>
+                            <span class="text-slate-600">Reading the financials website</span>
+                        </div>
+                        
+                        <div id="progress-step-2" class="progress-item flex items-center p-4 rounded-lg bg-slate-50 border-l-4 border-transparent">
+                            <div class="flex-shrink-0 w-6 h-6 rounded-full bg-slate-300 mr-4 flex items-center justify-center">
+                                <div class="w-2 h-2 rounded-full bg-white"></div>
+                            </div>
+                            <span class="text-slate-600">Creating a knowledge base with the content</span>
+                        </div>
+                        
+                        <div id="progress-step-3" class="progress-item flex items-center p-4 rounded-lg bg-slate-50 border-l-4 border-transparent">
+                            <div class="flex-shrink-0 w-6 h-6 rounded-full bg-slate-300 mr-4 flex items-center justify-center">
+                                <div class="w-2 h-2 rounded-full bg-white"></div>
+                            </div>
+                            <span class="text-slate-600">Configuring the finanshels ainager</span>
+                        </div>
+                        
+                        <div id="progress-step-4" class="progress-item flex items-center p-4 rounded-lg bg-slate-50 border-l-4 border-transparent">
+                            <div class="flex-shrink-0 w-6 h-6 rounded-full bg-slate-300 mr-4 flex items-center justify-center">
+                                <div class="w-2 h-2 rounded-full bg-white"></div>
+                            </div>
+                            <span class="text-slate-600">Done</span>
+                        </div>
+                    </div>
+                    <!-- @END_MAP -->
+
+                    <!-- Progress Bar -->
+                    <div class="w-full bg-slate-200 rounded-full h-2 mb-4">
+                        <div id="progressBar" class="bg-brand-light h-2 rounded-full transition-all duration-1000 ease-out" style="width: 0%"></div>
+                    </div>
+                    
+                    <div class="text-center">
+                        <span id="progressText" class="text-sm text-slate-500">Starting setup...</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 4: Success Screen -->
+            <!-- @COMPONENT: SuccessStep [show when currentStep === 4] -->
+            <div id="step4" class="step-screen hidden">
+                <div class="bg-white rounded-2xl shadow-xl p-8 border border-slate-200 animate-slide-up">
+                    <div class="text-center mb-8">
+                        <div class="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg class="w-10 h-10 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                        </div>
+                        <h2 class="text-2xl font-bold text-slate-800 mb-2">Setup Complete!</h2>
+                        <p class="text-slate-600">Your AI manager is ready to use</p>
+                    </div>
+
+                    <!-- Logo Display -->
+                    <div class="bg-slate-50 rounded-xl p-6 mb-6">
+                        <div class="text-center mb-4">
+                            <h3 class="text-lg font-semibold text-slate-800 mb-2">Your Logo</h3>
+                            <div class="inline-block p-4 bg-white rounded-lg shadow-sm border">
+                                <!-- Display the actual logo image -->
+                                <div class="w-16 h-16 bg-brand-blue rounded-xl flex items-center justify-center">
+                                    <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTIwIDVDMTEuNzE1NyA1IDUgMTEuNzE1NyA1IDIwQzUgMjguMjg0MyAxMS43MTU3IDM1IDIwIDM1QzI4LjI4NDMgMzUgMzUgMjguMjg0MyAzNSAyMEMzNSAxMS43MTU3IDI4LjI4NDMgNSAyMCA1WiIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSIyIiBmaWxsPSJub25lIi8+CjxjaXJjbGUgY3g9IjE2IiBjeT0iMTYiIHI9IjIiIGZpbGw9IndoaXRlIi8+CjxjaXJjbGUgY3g9IjI0IiBjeT0iMTYiIHI9IjIiIGZpbGw9IndoaXRlIi8+CjxjaXJjbGUgY3g9IjIwIiBjeT0iMjQiIHI9IjIiIGZpbGw9IndoaXRlIi8+CjxwYXRoIGQ9Ik0xMCAzMEwyMCAyMEwzMCAzMEgxMFoiIGZpbGw9IndoaXRlIi8+Cjwvc3ZnPgo=" alt="Ainager Logo" class="w-10 h-10" data-mock="true" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Link Display -->
+                    <div class="bg-slate-50 rounded-xl p-6 mb-8">
+                        <h3 class="text-lg font-semibold text-slate-800 mb-3">Your AI Manager Link</h3>
+                        <div class="bg-white border border-slate-200 rounded-lg p-4 flex items-center justify-between">
+                            <code class="text-brand-blue font-mono text-sm" data-bind="generatedLink">https://www.ainager.com/w/finanshels</code>
+                            <button 
+                                class="ml-4 px-3 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm rounded transition-colors"
+                                data-event="click:copyLink"
+                                data-implementation="Copy link to clipboard"
+                            >
+                                Copy
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Instructions -->
+                    <div class="bg-blue-50 border border-blue-200 rounded-xl p-6 mb-6">
+                        <div class="flex items-start">
+                            <svg class="w-5 h-5 text-blue-500 mt-0.5 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            <div>
+                                <h4 class="font-semibold text-blue-800 mb-1">Ready to use!</h4>
+                                <p class="text-blue-700 text-sm">You can use the logo and the link in your website and emails</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="space-y-3">
+                        <button 
+                            class="w-full bg-brand-blue hover:bg-blue-900 text-white font-semibold py-3 px-4 rounded-lg transition-colors"
+                            data-event="click:openLink"
+                            data-implementation="Open link in new tab"
+                        >
+                            Open AI Manager
+                        </button>
+                        
+                        <button 
+                            class="w-full border border-slate-300 hover:bg-slate-50 text-slate-700 font-medium py-3 px-4 rounded-lg transition-colors"
+                            data-event="click:downloadAssets"
+                            data-implementation="Download logo and assets"
+                        >
+                            Download Assets
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+    <!-- @END_COMPONENT: AppContainer -->
+
+    <script>
+        (function() {
+            // TODO: Implement state management, API calls, and business logic
+            
+            // @STATE: currentStep:number = 1, formData:object = {email: '', otp: ''}
+            let currentStep = 1;
+            let formData = {
+                email: '',
+                otp: ''
+            };
+
+            const progressMessages = [
+                "Reading the financials website",
+                "Creating a knowledge base with the content", 
+                "Configuring the finanshels ainager",
+                "Done"
+            ];
+
+            // Utility functions
+            function showStep(stepNumber) {
+                // Hide all steps
+                document.querySelectorAll('.step-screen').forEach(step => {
+                    step.classList.add('hidden');
+                });
+                
+                // Show target step
+                const targetStep = document.getElementById(`step${stepNumber}`);
+                if (targetStep) {
+                    targetStep.classList.remove('hidden');
+                }
+            }
+
+            function validateEmail(email) {
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                return emailRegex.test(email);
+            }
+
+            // Step 1: Email submission
+            document.getElementById('emailForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                const email = document.getElementById('email').value;
+                const errorDiv = document.getElementById('emailError');
+                
+                if (!validateEmail(email)) {
+                    errorDiv.textContent = 'Please enter a valid email address';
+                    errorDiv.classList.remove('hidden');
+                    return;
+                }
+                
+                errorDiv.classList.add('hidden');
+                formData.email = email;
+                currentStep = 2;
+                
+                setTimeout(() => {
+                    showStep(2);
+                    // Update email display in OTP step
+                    document.querySelectorAll('[data-bind="formData.email"]').forEach(el => {
+                        if (el.tagName === 'INPUT') return;
+                        el.textContent = email;
+                    });
+                }, 100);
+            });
+
+            // Step 2: OTP verification
+            document.getElementById('otpForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                const otp = document.getElementById('otp').value;
+                
+                if (otp.length !== 6) {
+                    alert('Please enter a 6-digit verification code');
+                    return;
+                }
+                
+                formData.otp = otp;
+                currentStep = 3;
+                
+                setTimeout(() => {
+                    showStep(3);
+                    startProgressAnimation();
+                }, 100);
+            });
+
+            // Progress animation
+            function startProgressAnimation() {
+                const progressBar = document.getElementById('progressBar');
+                const progressText = document.getElementById('progressText');
+                let currentProgress = 0;
+                
+                function updateProgress(stepIndex) {
+                    if (stepIndex >= progressMessages.length) {
+                        // Complete - move to success screen
+                        setTimeout(() => {
+                            currentStep = 4;
+                            showStep(4);
+                        }, 500);
+                        return;
+                    }
+                    
+                    // Update progress bar
+                    currentProgress = ((stepIndex + 1) / progressMessages.length) * 100;
+                    progressBar.style.width = currentProgress + '%';
+                    
+                    // Update current step visual
+                    const currentStepEl = document.getElementById(`progress-step-${stepIndex + 1}`);
+                    if (currentStepEl) {
+                        currentStepEl.classList.add('border-brand-light', 'bg-blue-50');
+                        const circle = currentStepEl.querySelector('.w-6.h-6');
+                        const dot = circle.querySelector('.w-2.h-2');
+                        circle.classList.remove('bg-slate-300');
+                        circle.classList.add('bg-brand-light');
+                        dot.classList.add('animate-pulse');
+                    }
+                    
+                    // Update progress text
+                    progressText.textContent = progressMessages[stepIndex];
+                    
+                    // Mark as complete after delay
+                    setTimeout(() => {
+                        if (currentStepEl) {
+                            currentStepEl.classList.remove('border-brand-light', 'bg-blue-50');
+                            currentStepEl.classList.add('border-emerald-500', 'bg-emerald-50');
+                            const circle = currentStepEl.querySelector('.w-6.h-6');
+                            const dot = circle.querySelector('.w-2.h-2');
+                            circle.classList.remove('bg-brand-light');
+                            circle.classList.add('bg-emerald-500');
+                            dot.classList.remove('animate-pulse');
+                            
+                            // Add checkmark
+                            circle.innerHTML = '<svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>';
+                        }
+                        
+                        updateProgress(stepIndex + 1);
+                    }, 2000);
+                }
+                
+                // Start the progress animation
+                setTimeout(() => updateProgress(0), 500);
+            }
+
+            // Copy link functionality
+            document.addEventListener('click', function(e) {
+                if (e.target.hasAttribute('data-event') && e.target.getAttribute('data-event').includes('copyLink')) {
+                    const link = 'https://www.ainager.com/w/finanshels';
+                    navigator.clipboard.writeText(link).then(() => {
+                        e.target.textContent = 'Copied!';
+                        e.target.classList.add('bg-emerald-100', 'text-emerald-700');
+                        setTimeout(() => {
+                            e.target.textContent = 'Copy';
+                            e.target.classList.remove('bg-emerald-100', 'text-emerald-700');
+                        }, 2000);
+                    });
+                }
+            });
+
+            // Resend OTP functionality
+            document.addEventListener('click', function(e) {
+                if (e.target.hasAttribute('data-event') && e.target.getAttribute('data-event').includes('resendOTP')) {
+                    e.target.textContent = 'Code Sent!';
+                    e.target.classList.add('text-emerald-500');
+                    setTimeout(() => {
+                        e.target.textContent = 'Resend Code';
+                        e.target.classList.remove('text-emerald-500');
+                    }, 3000);
+                }
+            });
+
+            // Initialize
+            showStep(1);
+        })();
+    </script>
+</body>
+</html>
