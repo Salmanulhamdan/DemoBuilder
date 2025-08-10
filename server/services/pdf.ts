@@ -23,8 +23,25 @@ async function ensureOutputDir(): Promise<string> {
   return outputDir;
 }
 
+function sanitizeText(text: string): string {
+  // Remove or replace Unicode characters that can't be encoded in PDF
+  return text
+    .replace(/[\u{1F300}-\u{1F9FF}]/gu, '') // Remove emojis
+    .replace(/[\u{2600}-\u{26FF}]/gu, '') // Remove miscellaneous symbols
+    .replace(/[\u{2700}-\u{27BF}]/gu, '') // Remove dingbats
+    .replace(/[\u{1F000}-\u{1F02F}]/gu, '') // Remove mahjong tiles
+    .replace(/[\u{1F0A0}-\u{1F0FF}]/gu, '') // Remove playing cards
+    .replace(/[\u{1F100}-\u{1F64F}]/gu, '') // Remove additional symbols
+    .replace(/[\u{1F650}-\u{1F9FF}]/gu, '') // Remove more symbols
+    .replace(/[\u{2000}-\u{206F}]/gu, ' ') // Replace various spaces with regular space
+    .replace(/[\u{2028}-\u{2029}]/gu, '\n') // Replace line/paragraph separators with newline
+    .replace(/\s+/g, ' ') // Normalize whitespace
+    .trim();
+}
+
 function wrapText(text: string, maxCharsPerLine: number): string[] {
-  const words = text.split(/\s+/);
+  const sanitizedText = sanitizeText(text);
+  const words = sanitizedText.split(/\s+/);
   const lines: string[] = [];
   let current = "";
   for (const word of words) {
@@ -61,7 +78,8 @@ export async function generateWebsitePdf(input: WebsitePdfInput): Promise<string
     return page;
   };
 
-  let page = addPageWithHeader(`${input.title} — Website Knowledge Base`);
+  const sanitizedTitle = sanitizeText(input.title);
+  let page = addPageWithHeader(`${sanitizedTitle} — Website Knowledge Base`);
   let cursorY = page.getHeight() - margin - 30;
 
   const drawSection = (heading: string, body: string, options?: { maxLines?: number }) => {
@@ -71,7 +89,8 @@ export async function generateWebsitePdf(input: WebsitePdfInput): Promise<string
     const maxLines = options?.maxLines ?? 10000;
 
     // Heading
-    page.drawText(heading, { x: margin, y: cursorY, size: headingSize, font, color: rgb(0.1, 0.1, 0.4) });
+    const sanitizedHeading = sanitizeText(heading);
+    page.drawText(sanitizedHeading, { x: margin, y: cursorY, size: headingSize, font, color: rgb(0.1, 0.1, 0.4) });
     cursorY -= headingSize + 6;
 
     // Body (simple character-based wrapping)
@@ -81,7 +100,8 @@ export async function generateWebsitePdf(input: WebsitePdfInput): Promise<string
     for (const line of lines) {
       if (printed >= maxLines) break;
       if (cursorY < margin + lineHeight) {
-        page = addPageWithHeader(`${input.title} — Website Knowledge Base`);
+        const sanitizedTitle = sanitizeText(input.title);
+        page = addPageWithHeader(`${sanitizedTitle} — Website Knowledge Base`);
         cursorY = page.getHeight() - margin - 10;
       }
       page.drawText(line, { x: margin, y: cursorY, size: bodySize, font, color: rgb(0, 0, 0) });
