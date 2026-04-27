@@ -17,21 +17,7 @@ function extractDomainFromEmail(email: string): string {
 
 function buildAinagerNameFromEmail(email: string): string {
   const domain = extractDomainFromEmail(email);
-  if (!domain) return "ainager";
-  
-  // Extract the main part of the domain (before .com, .org, etc.)
-  const domainParts = domain.split('.');
-  const mainDomain = domainParts[0] || domain;
-  
-  // Convert to title case and clean up
-  const companyName = mainDomain
-    .replace(/[-_]+/g, ' ') // Replace hyphens/underscores with spaces
-    .split(' ')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-    .join(' ')
-    .trim();
-  
-  return companyName || domain;
+  return domain || "ainager";
 }
 
 export async function createAinagerAndDocumentMySql(input: CreateAinagerInput): Promise<{
